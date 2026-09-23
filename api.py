@@ -70,6 +70,10 @@ class WeatherHandler(BaseHTTPRequestHandler):
             except requests.RequestException as error:
                 self.send_json({"error": f"Weather provider unavailable: {error}"}, 502)
             return
+        if parsed.path == "/favicon.ico":
+            self.send_response(204)
+            self.end_headers()
+            return
         if parsed.path == "/" or parsed.path == "/index.html":
             page = (Path(__file__).parent / "index.html").read_bytes()
             self.send_response(200)
