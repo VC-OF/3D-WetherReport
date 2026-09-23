@@ -1,0 +1,513 @@
+# Build Engine Architecture for Multi-File Feature Development
+
+## Problem Statement
+
+When developing an AI Build Engine, one of the biggest challenges is answering the following questions:
+
+* How does the AI remember what it has already developed?
+* How does it know where to place new code?
+* How does it modify existing files instead of rewriting the entire project?
+* How does it handle changes that affect multiple frontend and backend files?
+* How do Claude Code, Gemini CLI, Cursor, and similar tools solve these problems?
+
+The answer is that the LLM itself does not remember anything. Modern AI coding systems use an agent layer that performs planning, retrieval, code analysis, patch generation, and memory management.
+
+---
+
+## How Modern AI Coding Agents Work
+
+They do NOT work like this:
+
+User Story → LLM → Generate Entire Project
+
+They work like this:
+
+User Story
+
+↓
+
+Intent Analysis
+
+↓
+
+Project Memory Retrieval
+
+↓
+
+Code Index Retrieval
+
+↓
+
+Dependency Analysis
+
+↓
+
+Impact Analysis
+
+↓
+
+File Retrieval
+
+↓
+
+Task Planning
+
+↓
+
+Code Generation
+
+↓
+
+Patch Generation
+
+↓
+
+Apply Changes
+
+↓
+
+Testing
+
+↓
+
+Update Project Memory
+
+↓
+
+Git Commit
+
+The intelligence lies in the agent layer, not in the LLM.
+
+---
+
+## Does the AI Remember the Entire Codebase?
+
+No.
+
+The AI model is stateless.
+
+The Build Engine maintains memories such as:
+
+* Project Memory
+* Story Memory
+* Architecture Memory
+* Codebase Memory
+* Dependency Memory
+* Git Memory
+* Test Memory
+* Knowledge Graph
+
+Example:
+
+Project Memory
+
+* Modules
+* APIs
+* Database Schema
+* Existing Features
+* User Stories
+* Folder Structure
+* Dependencies
+* Versions
+
+This information is stored outside the LLM.
+
+---
+
+## How Does AI Know Which Files to Modify?
+
+Suppose the project contains:
+
+Frontend
+
+* Login.tsx
+* Dashboard.tsx
+* Navbar.tsx
+
+Backend
+
+* auth.py
+* user.py
+* email_service.py
+
+User asks:
+
+"Add Forgot Password functionality."
+
+The Build Engine performs Impact Analysis.
+
+It identifies:
+
+Affected Files:
+
+Frontend:
+
+* Login.tsx
+* API client
+* Routes
+
+Backend:
+
+* auth.py
+* user.py
+* email_service.py
+
+Database:
+
+* users table
+
+Tests:
+
+* auth tests
+
+Only these files are retrieved.
+
+The remaining files are ignored.
+
+---
+
+## How Does AI Know Where to Place the Code?
+
+The agent analyzes:
+
+* File structure
+* Classes
+* Functions
+* Components
+* Imports
+* Dependencies
+* Symbols
+* AST (Abstract Syntax Tree)
+
+Example:
+
+Before:
+
+function Login() {
+return (
+<> <LoginButton />
+</>
+)
+}
+
+User:
+
+"Add Forgot Password below Login Button."
+
+The agent determines:
+
+* File = Login.tsx
+* Component = LoginButton
+* Operation = Insert After
+
+After:
+
+<LoginButton />
+<ForgotPasswordLink />
+
+The AI does not regenerate the entire file.
+
+---
+
+## How Existing Files Are Modified
+
+Modern AI coding agents use edit operations.
+
+Examples:
+
+* Insert
+* Replace
+* Append
+* Delete
+* Rename
+* Move
+
+Example:
+
+Replace lines 150-165.
+
+Or:
+
+Insert after:
+
+class UserService
+
+Or:
+
+Append:
+
+def reset_password()
+
+Only the affected portion of the file is changed.
+
+---
+
+## How Multi-File Features Work
+
+Suppose:
+
+"Add Forgot Password functionality."
+
+The Build Engine breaks the feature into smaller tasks.
+
+Task List:
+
+1. Add Forgot Password button.
+2. Create Forgot Password page.
+3. Add API endpoint.
+4. Generate reset token.
+5. Send email.
+6. Reset password API.
+7. Update database.
+8. Add tests.
+
+Each task is planned separately.
+
+---
+
+## Modification Plan Example
+
+Frontend
+
+Modify:
+
+* Login.tsx
+* routes.ts
+* api.ts
+
+Create:
+
+* ForgotPassword.tsx
+* ResetPassword.tsx
+
+Backend
+
+Modify:
+
+* auth.py
+* email_service.py
+
+Create:
+
+* password_reset.py
+
+Database
+
+Modify:
+
+* users table
+
+Tests
+
+Create:
+
+* password_reset_test.py
+
+Only these files are provided to the LLM.
+
+---
+
+## How Claude Code and Gemini CLI Work
+
+They use an Agentic Loop.
+
+The agent performs:
+
+1. Search files.
+2. Read files.
+3. Understand dependencies.
+4. Build a modification plan.
+5. Generate patches.
+6. Apply patches.
+7. Run tests.
+8. Update context.
+
+Claude Code provides tools similar to:
+
+* Read
+* Edit
+* MultiEdit
+* Write
+* Grep
+* Glob
+* Bash
+
+Gemini CLI provides tools similar to:
+
+* read_many_files()
+* grep_search()
+* list_directory()
+* write_file()
+* run_shell_command()
+
+Neither model remembers the codebase.
+
+---
+
+## Why They Don't Rewrite Everything
+
+Suppose a file contains 5000 lines.
+
+Only 10 lines need modification.
+
+Bad Approach:
+
+* Regenerate 5000 lines.
+
+Good Approach:
+
+* Read existing file.
+* Locate insertion point.
+* Generate 10 lines.
+* Apply patch.
+* Save file.
+
+The remaining 4990 lines are preserved.
+
+---
+
+## How Project Memory Should Work
+
+Store:
+
+Story Memory:
+
+* User Story ID
+* Files modified
+* APIs created
+* Dependencies added
+* Tests added
+
+Architecture Memory:
+
+* Modules
+* Folder structure
+* Design patterns
+
+Code Memory:
+
+* File summaries
+* Classes
+* Functions
+* Dependencies
+
+Git Memory:
+
+* Commit history
+* Version information
+
+Knowledge Graph:
+
+* Module relationships
+
+Example:
+
+Authentication Module
+
+Related:
+
+* Login
+* Signup
+* Forgot Password
+* OTP Verification
+* JWT
+* Email Service
+
+Future stories can reuse this information.
+
+---
+
+## Example of Future Feature Development
+
+Existing Feature:
+
+Forgot Password
+
+Files:
+
+* ForgotPassword.tsx
+* password_reset.py
+* email_service.py
+
+New User Story:
+
+"Add OTP verification."
+
+The Build Engine retrieves:
+
+* ForgotPassword.tsx
+* password_reset.py
+* User model
+* Email service
+
+It understands:
+
+DO NOT REBUILD.
+
+Reuse existing implementation.
+
+Modify only:
+
+* ForgotPassword.tsx
+* password_reset.py
+
+This significantly improves performance and consistency.
+
+---
+
+## Recommended Build Engine Architecture
+
+```
+                User Story
+                     |
+                     v
+              Intent Analyzer
+                     |
+                     v
+               Project Memory
+                     |
+                     v
+                 Code Index
+                     |
+                     v
+            Dependency Analysis
+                     |
+                     v
+              Impact Analysis
+                     |
+                     v
+             Retrieve Relevant Files
+                     |
+                     v
+              AST / Symbol Analysis
+                     |
+                     v
+                Planning Agent
+                     |
+                     v
+               Task Breakdown
+                     |
+                     v
+                      LLM
+                     |
+                     v
+               Patch Generator
+                     |
+                     v
+                Patch Applier
+                     |
+                     v
+                  Testing
+                     |
+                     v
+              Update Project Memory
+                     |
+                     v
+                  Git Commit
+```
+
+---
+
+## Final Takeaway
+
+Modern AI coding systems do not rely on the LLM to remember or rewrite an entire codebase. The LLM is only responsible for generating new or modified code. The agent layer performs project understanding, dependency analysis, impact analysis, task planning, file retrieval, patch generation, testing, and memory management. By maintaining project memory and editing only the affected portions of relevant files, AI coding agents can safely develop and evolve large multi-file frontend and backend applications over hundreds of user stories without losing architectural consistency.
